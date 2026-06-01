@@ -1,0 +1,13 @@
+# This is an example of a Marked Graph Petri Net, just write the Pre & Post matrices
+
+# Pre
+pre = [[1, 0, 0],
+       [0, 1, 0],
+       [0, 1, 0],
+       [0, 0, 1]]
+
+# Post
+post = [[0, 0, 1],
+        [1, 0, 0],
+        [1, 0, 0],
+        [0, 1, 0]]

@@ -1,0 +1,13 @@
+# This is an example of a State Machine Petri Net, just write the Pre & Post matrices
+
+# Pre
+pre = [[1, 1, 0, 0],
+       [0, 0, 1, 0],
+       [0, 0, 0, 1],
+       [0, 0, 0, 0]]
+
+# Post
+post = [[0, 0, 0, 0],
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 1]]
