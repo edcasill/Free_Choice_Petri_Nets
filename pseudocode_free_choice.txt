@@ -1,0 +1,39 @@
+INICIO
+Recibe Pre y Post
+
+// Verifica si la red es un Grafo Marcado
+Para cada lugar i de 0 hasta total_lugares:
+    Suma_lugar_pre = suma de valores de entrada respecto a las transiciones
+    Suma_lugar_post = suma de valores de salida respecto a las transiciones
+    Si (Suma_lugar_pre != 1) o (Suma_lugar_post != 1):
+        “No es Grafo Marcado, prueba a Máquina de estados y Free-Choice”
+        Sal del ciclo
+    De otra manera:
+        “Es grafo Marcado, y por definición también Free-Choice”
+        FIN
+
+// Verifica si la red es una Máquina de estados
+Para cada transición j de 0 hasta total_transiciones:
+    Suma_transicion_pre = suma de valores de entrada respecto a los lugares
+    Suma_transicion_post = suma de valores de salida respecto a los lugares
+    Si (Suma_transicion_pre != 1) o (Suma_transicion_post != 1):
+        “No es Máquina de estados, prueba a Free-Choice”
+        Sal del ciclo
+    De otra manera:
+        “Es Máquina de estados, y por definición también Free-Choice”
+        FIN
+
+// Verifica si la red es Free-Choice
+Para cada lugar i de 0 hasta total_lugares:
+    Suma_lugar_pre = suma de valores de entrada respecto a las transiciones
+    Si Suma_lugar_pre > 1:
+        // Conflicto, más de una salida
+        Para cada transición j de 0 hasta total_transiciones:
+            Si Pre[i][j] = 1:
+                // Verifica si la transición tiene más de 1 lugar de entrada
+                Suma_transicion_pre = suma de valores de entrada respecto a los lugares
+                Si Suma_transicion_pre > 1:
+                    "La red no es Free-Choice"
+                    FIN
+"La red es Free-Choice, pero no ME ni GM"
+FIN
