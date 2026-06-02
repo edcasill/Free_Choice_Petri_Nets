@@ -1,0 +1,76 @@
+INICIO
+Recibe Pre y Post
+
+// Verifica si la red es un Grafo Marcado
+Para cada lugar i de 0 hasta total_lugares:
+    Suma_lugar_pre = suma de valores de entrada respecto a las transiciones
+    Suma_lugar_post = suma de valores de salida respecto a las transiciones
+    Si (Suma_lugar_pre != 1) o (Suma_lugar_post != 1):
+        “No es Grafo Marcado, prueba a Máquina de estados y Free-Choice”
+        Sal del ciclo
+    De otra manera:
+        “Es grafo Marcado, y por definición también Free-Choice”
+        FIN
+
+// Verifica si la red es una Máquina de estados
+Para cada transición j de 0 hasta total_transiciones:
+    Suma_transicion_pre = suma de valores de entrada respecto a los lugares
+    Suma_transicion_post = suma de valores de salida respecto a los lugares
+    Si (Suma_transicion_pre != 1) o (Suma_transicion_post != 1):
+        “No es Máquina de estados, prueba a Free-Choice”
+        Sal del ciclo
+    De otra manera:
+        “Es Máquina de estados, y por definición también Free-Choice”
+        FIN
+
+// Verifica si la red es Free-Choice
+Crear arreglo booleano Lugares_Visitados de tamaño total_lugares (iniciar en FALSO)
+Crear arreglo booleano Transiciones_Visitadas de tamaño total_transiciones (iniciar en FALSO)
+Crear lista vacía Lista_De_Clusters
+
+Para cada lugar i desde 0 hasta total_lugares - 1:
+    Si Lugares_Visitados[i] == FALSO:
+        // Encontramos un lugar no visitado, iniciamos un nuevo cluster
+        Crear nuevo Cluster (con una lista de lugares y una lista de transiciones)
+        Crear Cola_BFS
+        // Agregar el lugar inicial
+        Encolar(Cola_BFS, "LUGAR", i)
+        Lugares_Visitados[i] = VERDADERO
+        Mientras Cola_BFS NO esté vacía:
+            (tipo_nodo, indice) = Desencolar(Cola_BFS)
+            Si tipo_nodo == "LUGAR":
+                Agregar indice a la lista de lugares del Cluster
+                // Buscar todas las transiciones conectadas a este lugar en Pre
+                Para cada transición j desde 0 hasta total_transiciones - 1:
+                    Si Pre[indice][j] == 1 Y Transiciones_Visitadas[j] == FALSO:
+                        Encolar(Cola_BFS, "TRANSICION", j)
+                        Transiciones_Visitadas[j] = VERDADERO
+            Si tipo_nodo == "TRANSICION":
+                Agregar indice a la lista de transiciones del Cluster
+                // Buscar todos los lugares conectados a esta transición en Pre
+                Para cada lugar p desde 0 hasta total_lugares - 1:
+                    Si Pre[p][indice] == 1 Y Lugares_Visitados[p] == FALSO:
+                        Encolar(Cola_BFS, "LUGAR", p)
+                        Lugares_Visitados[p] = VERDADERO
+        // Guardar el cluster terminado
+        Agregar Cluster a Lista_De_Clusters
+
+Es_FC = VERDADERO
+Para cada Cluster en Lista_De_Clusters:
+    Lugares_del_Cluster = Cluster.lugares
+    Transiciones_del_Cluster = Cluster.transiciones
+    // Si el cluster solo tiene 1 lugar, por definición no hay conflicto Free-Choice
+    Si tamaño(Lugares_del_Cluster) > 1:
+        // Hay conflicto. Revisamos las transiciones de este cluster
+        Para cada transicion_j en Transiciones_del_Cluster:
+            // Calculamos cuántas entradas tiene esta transición en la matriz Pre original
+            Suma_Col_Pre = Suma de todos los valores en la columna transicion_j de Pre
+            Si Suma_Col_Pre > 1:
+                // Una transición en conflicto requiere sincronización de múltiples lugares
+                Es_FC = FALSO
+                Romper ambos ciclos
+Si Es_FC == VERDADERO:
+    Imprimir "La red es Free-Choice"
+Sino:
+    Imprimir "La red NO es Free-Choice"
+FIN
