@@ -63,6 +63,32 @@ class components:
         """
         Filter the s_invariants and calculate the S_components
         """
+        s_comp = []
+
+        for Is in S_invariants:
+            s_index = np.where(Is == 1)[0]
+            if len(s_index) == 0:
+                continue
+
+            pre_rows = self.pre[s_index, :]
+            post_rows = self.post[s_index, :]
+
+            conections = (pre_rows > 0) | (post_rows > 0)
+            T_index = np.where(np.any(conections, axis=0))[0]
+
+            if len(T_index) == 0:
+                continue
+
+            pre_sub = self.pre[np.ix_(s_index, T_index)]
+            post_sub = self.post[np.ix_(s_index, T_index)]
+
+            sum_trans_pre = np.sum(pre_sub, axis=0)
+            sum_trans_post = np.sum(post_sub, axis=0)
+
+            if np.all(sum_trans_pre == 1) and np.all(sum_trans_post == 1):
+                s_comp.append(s_index.tolist())
+        return s_comp
+        
 
     def t_components_filter(self, T_invariants):
         """
