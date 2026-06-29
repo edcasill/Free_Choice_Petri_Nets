@@ -45,17 +45,19 @@ class components:
                     new_row = (mult_p * row_p) + (mult_n * row_n)
                     new_rows.append(new_row)
 
-                    # update matrix
-                    # o rows + new rows
-                    if new_rows:
-                        A = np.vstack((A_zero, np.array(new_rows)))
-                    elif len(A_zero) > 0:
-                        A = A_zero
-                    else:
-                        break
+            # update matrix
+            # 0 rows + new rows
+            if new_rows:
+                A = np.vstack((A_zero, np.array(new_rows)))
+            elif len(A_zero) > 0:
+                A = A_zero
+            else:
+                break
 
-        invariants = A[:, n_rows]
+        # slicing to get all columns from D
+        invariants = A[:, :n_rows]
         invariants = invariants[~np.all(invariants == 0, axis=1)]
+        print(f"The invariant is {invariants}")
 
         return invariants
 
@@ -66,6 +68,7 @@ class components:
         s_comp = []
 
         for Is in S_invariants:
+            # aislar filas
             s_index = np.where(Is == 1)[0]
             if len(s_index) == 0:
                 continue
@@ -94,6 +97,31 @@ class components:
         """
         Filter the t_invariants and calculate the T_components
         """
+        t_comp = []
+
+        for It in T_invariants:
+            t_index = np.where(It == 1)[0]
+            if len(t_index) == 0:
+                continue
+
+            pre_rows = self.pre_transpose[t_index, :]
+            post_rows = self.post_transpose[t_index, :]
+
+            conections = (pre_rows > 0) | (post_rows > 0)
+            s_index = np.where(np.any(conections, axis=0))[0]
+
+            if len(s_index) == 0:
+                continue
+
+            pre_sub = self.pre_transpose[np.ix_(t_index, s_index)]
+            post_sub = self.post_transpose[np.ix_(t_index, s_index)]
+
+            sum_place_pre = np.sum(pre_sub, axis=0)
+            sum_place_post = np.sum(post_sub, axis=0)
+
+            if np.all(sum_place_pre == 1) and np.all(sum_place_post == 1):
+                t_comp.append(t_index.tolist())
+        return t_comp
 
     def get_components(self):
         S_invariants = self.calculate_invariants(use_transpose=False)

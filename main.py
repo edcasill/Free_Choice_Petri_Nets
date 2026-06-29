@@ -1,6 +1,7 @@
 import os
 import ast
 import petri_nets_types
+import st_components
 
 
 def read_file(file):
@@ -24,6 +25,26 @@ def read_file(file):
         return None, None
 
 
+def analize_net(archivo_seleccionado):
+    print(f"\nAnalizando el archivo: {archivo_seleccionado}")
+    pre, post = read_file(archivo_seleccionado)
+
+    if pre is not None and post is not None:
+        try:
+            print("1. Validar si es GM, ME y FC")
+            print("2. Encontrar S y T componentes")
+            option = int(input('Selecciona el analisis a realizar: '))
+            if option == 1:
+                pn = petri_nets_types.Petri_Nets(pre, post)
+                pn.evaluation()
+            elif option == 2:
+                pn = st_components.components(pre, post)
+                s_components, t_components = pn.get_components()
+                print(f"Los S-componentes son {s_components}\nLos T-componentes son {t_components}")
+        except ValueError:
+            print("Entrada inválida. Por favor ingresa un número entero.")
+
+
 def main():
     archivos = [f for f in os.listdir('.') if f.endswith('.txt')]
     if not archivos:
@@ -41,13 +62,7 @@ def main():
         # Validar que la opción esté dentro del rango
         if 1 <= option <= len(archivos):
             archivo_seleccionado = archivos[option - 1]
-            print(f"\nAnalizando el archivo: {archivo_seleccionado}")
-
-            pre, post = read_file(archivo_seleccionado)
-
-            if pre is not None and post is not None:
-                pn = petri_nets_types.Petri_Nets(pre, post)
-                pn.evaluation()
+            analize_net(archivo_seleccionado)
         else:
             print("El número seleccionado no está en la lista.")
 
