@@ -1,0 +1,99 @@
+INICIO
+    ENTRADA:
+        Pre = Matriz Pre de la red
+        Post = Matriz Post de la red
+    SALIDA:
+        S_componentes = []
+        T_componentes = []
+    ALGORITMO:
+    // algortimo principal
+    Lee Pre y Post
+    C = Post - Pre  // matriz de incidencia
+
+    S_invariantes = calcular_invariantes(C, usa_transpuesta=FALSO)
+    T_invariantes = calcular_invariantes(C, usa_transpuesta=VERDADERO)
+
+    S_componentes = filtrar_s_componentes(S_invariantes, Pre, Post)
+    T_componentes = filtrar_t_componentes(T_invariantes, Pre, post)
+
+    Retornar S_componentes, T_componentes
+FIN
+
+// algortimo de Martinez-Silva
+FUNCION calcular_invariantes(C, usa_transpuesta):
+    Si usa_transpuesta == VERDADERO:
+        M_inidencia = Transponer(C)
+    De otra manera:
+        M_inidencia = C
+    
+    m = número de columnas de M_inidencia
+    D = matriz identidad con tamaño igual al número de filas de M_inidencia
+
+    Para i=1 hasta m hacer:
+        Añadir a [D | Matriz_Trabajo] todas las combinaciones lineales positivas de pares de filas que anulen la i-ésima columna de Matriz_Trabajo.
+
+        Eliminar de [D | Matriz_Trabajo] las filas donde la i-ésima columna de Matriz_Trabajo sea no nula.
+    
+    invariantes = Extraer la parte correspondiente a D de la matriz resultante
+    Retornar invariantes
+FIN
+
+// filtrado de S-componentes por máquina de estados
+FUNCION filtrar_s_componentes(S_invariantes, Pre, Post):
+    // S-componentes (todos los in/out de los lugares)
+    // filtrado estructural sobre los invariantes (nuevos pre y post)
+    S_comp = []
+
+    Para cada vector Is en S_invariantes hacer:
+        indices_S = obtener indices donde el valor es 1(Is)
+        // busca transiciones conectadas a los lugares
+        indices_T = obtener columnas no nulas(Pre, Post, indices_S)
+
+        // Crea nuevas matrices de la subred
+        pre_sub = extraer sub-matriz(Pre, filas=indices_S, columnas=indices_T)
+        post_sub = extraer sub-matriz(Post, filas=indices_S, columnas=indices_T)
+
+        //filtrado por maquina de estrados
+        es_ME = VERDADERO
+        Para cada columna j en pre_sub y post_sub hacer:
+            Suma_transicion_pre = suma(Pre_sub[:, j]) // Suma de la columna j
+            Suma_transicion_post = suma(Post_sub[:, j])
+
+            Si (Suma_transicion_pre != 1) o (Suma_transicion_post != 1):
+                es_ME = FALSO
+                Romper_Ciclo
+            
+        Si es_ME == VERDADERO:
+            Agregar indices_S a S_comp
+    Retornar S_comp
+FIN
+
+// filtrado de T-componentes por Grafo Marcado
+FUNCION filtrar_t_componentes(T_invariantes, Pre, Post):
+    // T-componentes (todos los in/out de las transiciones)
+    // filtrado estructural sobre los invariantes (nuevos pre y post)
+    T_comp = []
+    Para cada vector It en T_invariantes:
+        indices_T = obtener_indices_donde_valor_es_1(It)
+        // Buscamos los lugares (filas) conectados a estas transiciones
+        indices_S = obtener_filas_no_nulas(Pre, Post, columnas_analizadas=indices_T)
+
+        // Crea nuevas matrices de la subred
+        pre_sub = extraer_submatriz(Pre, filas=indices_S, columnas=indices_T)
+        post_sub = extraer_submatriz(Post, filas=indices_S, columnas=indices_T)
+
+        es_GM = VERDADERO
+        // En Grafos Marcados, revisamos los LUGARES (Filas)
+        Para cada fila i en pre_sub y post_sub hacer:
+            Suma_lugar_pre = suma_de_elementos(pre_sub[i, :])  // Suma de la FILA i
+            Suma_lugar_post = suma_de_elementos(post_sub[i, :]) 
+
+            Si (Suma_lugar_pre != 1) o (Suma_lugar_post != 1):
+                es_GM = FALSO
+                Romper_Ciclo
+                
+        Si es_GM == VERDADERO:
+            Agregar indices_T a T_comp
+            
+    Retornar T_comp
+FIN
