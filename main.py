@@ -2,6 +2,7 @@ import os
 import ast
 import petri_nets_types
 import st_components
+from visualizer import PetriVisualizer
 
 
 def read_file(file):
@@ -40,6 +41,14 @@ def analize_net(archivo_seleccionado):
             elif option == 2:
                 pn = st_components.components(pre, post)
                 s_components, s_cover, t_components, t_cover = pn.get_components()
+                vis = PetriVisualizer(pre, post, output_dir="grafos_generados")
+
+                vis.dibujar_red(nombre_archivo="1_Red_Original")
+                vis.visualizar_s_componentes(s_components, prefijo="2_S_Comp")
+                vis.visualizar_s_componentes(s_cover, prefijo="3_S_Cover")
+                vis.visualizar_t_componentes(t_components, prefijo="4_T_Comp")
+                vis.visualizar_t_componentes(t_cover, prefijo="5_T_Cover")
+
                 s_components = ajustar_inicio(s_components)
                 s_cover = ajustar_inicio(s_cover)
                 t_components = ajustar_inicio(t_components)
