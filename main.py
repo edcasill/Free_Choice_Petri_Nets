@@ -39,14 +39,24 @@ def analize_net(archivo_seleccionado):
                 pn.evaluation()
             elif option == 2:
                 pn = st_components.components(pre, post)
-                s_components, t_components = pn.get_components()
-                print(f"Los S-componentes son {s_components}\nLos T-componentes son {t_components}")
+                s_components, s_cover, t_components, t_cover = pn.get_components()
+                elimina0(s_cover)
+                print(f"Los S-componentes son {s_components}\nLas S-coverturas son {s_cover}")
+                print(f"Los T-componentes son {t_components}\nLas T-coverturas son {t_cover}")
         except ValueError:
             print("Entrada inválida. Por favor ingresa un número entero.")
 
 
+def elimina0(componente):
+    for comp in componente:
+        for i in comp:
+            comp[i] = i + 1
+    print(componente)
+    #return componente
+
+
 def main():
-    archivos = [f for f in os.listdir('.') if f.endswith('.txt')]
+    archivos = [f for f in os.listdir('.') if f.endswith('.txt') and not f.startswith('pseudocode')]
     if not archivos:
         print("No se encontraron archivos .txt en el directorio.")
         return

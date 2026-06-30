@@ -1,4 +1,5 @@
 import numpy as np
+import itertools
 
 
 class components:
@@ -7,6 +8,38 @@ class components:
         self.post = np.array(post)
         self.pre_transpose = self.pre.T
         self.post_transpose = self.post.T
+
+    def _filter_minimal(self, A, n_rows):
+        """
+        Elimina las filas cuyo soporte en la submatriz D es un superconjunto 
+        estricto de otra fila, garantizando invariantes mínimos.
+        """
+        D = A[:, :n_rows]
+        S = (D != 0)  # Matriz booleana de soportes (True donde hay valores > 0)
+        keep = []
+
+        for i in range(len(S)):
+            is_minimal = True
+            for j in range(len(S)):
+                if i == j:
+                    continue
+
+                # S[j] es subconjunto de S[i] si todos los True en S[j] también son True en S[i]
+                if np.all(S[j] <= S[i]):
+                    # Si tienen exactamente el mismo soporte, conservamos solo el primero
+                    if np.array_equal(S[i], S[j]):
+                        if j < i:
+                            is_minimal = False
+                            break
+                    else:
+                        # S[j] es un subconjunto estricto de S[i], por lo tanto i no es mínimo
+                        is_minimal = False
+                        break
+
+            if is_minimal:
+                keep.append(i)
+
+        return A[keep]
 
     def calculate_invariants(self, use_transpose=False):
         """
@@ -43,6 +76,11 @@ class components:
 
                     # new null row
                     new_row = (mult_p * row_p) + (mult_n * row_n)
+                    non_zero_elements = new_row[new_row != 0]
+                    if len(non_zero_elements) > 0:
+                        row_gcd = np.gcd.reduce(non_zero_elements)
+                        if row_gcd > 1:
+                            new_row = new_row // row_gcd
                     new_rows.append(new_row)
 
             # update matrix
@@ -53,6 +91,7 @@ class components:
                 A = A_zero
             else:
                 break
+            A = self._filter_minimal(A, n_rows)
 
         # slicing to get all columns from D
         invariants = A[:, :n_rows]
@@ -69,7 +108,7 @@ class components:
 
         for Is in S_invariants:
             # aislar filas
-            s_index = np.where(Is == 1)[0]
+            s_index = np.where(Is >= 1)[0]
             if len(s_index) == 0:
                 continue
 
@@ -100,7 +139,7 @@ class components:
         t_comp = []
 
         for It in T_invariants:
-            t_index = np.where(It == 1)[0]
+            t_index = np.where(It >= 1)[0]
             if len(t_index) == 0:
                 continue
 
@@ -122,10 +161,40 @@ class components:
             if np.all(sum_place_pre == 1) and np.all(sum_place_post == 1):
                 t_comp.append(t_index.tolist())
         return t_comp
+    
+    def _get_cover(self, components, total_elements):
+        """
+        Extrae un recubrimiento mínimo (Cover) a partir de una lista de componentes.
+        Retorna el conjunto mínimo de componentes que cubren la red (lugares o transiciones).
+        """
+        required_items = set(range(total_elements))
+
+        # Buscamos la combinación más pequeña: de tamaño 1 hasta el total de componentes
+        for r in range(1, len(components) + 1):
+            for combo in itertools.combinations(components, r):
+                # Unimos todos los elementos de la combinación actual
+                covered = set(item for comp in combo for item in comp)
+                
+                # Si esta combinación cubre todos los elementos necesarios, ¡es la mínima!
+                if covered.issuperset(required_items):
+                    # Convertimos la tupla de itertools de regreso a una lista
+                    return list(combo)
+
+        return components
 
     def get_components(self):
         S_invariants = self.calculate_invariants(use_transpose=False)
         T_invariants = self.calculate_invariants(use_transpose=True)
+
         S_components = self.s_components_filter(S_invariants)
         T_components = self.t_components_filter(T_invariants)
-        return S_components, T_components
+
+        # 3. Extraemos el recubrimiento mínimo
+        # Para S-components, debemos cubrir todos los lugares (shape[0])
+        total_places = self.pre.shape[0]
+        S_cover = self._get_cover(S_components, total_places)
+        
+        # Para T-components, debemos cubrir todas las transiciones (shape[1])
+        total_transitions = self.pre.shape[1]
+        T_cover = self._get_cover(T_components, total_transitions)
+        return S_components,S_cover, T_components, T_cover
