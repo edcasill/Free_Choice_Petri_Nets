@@ -40,19 +40,21 @@ def analize_net(archivo_seleccionado):
             elif option == 2:
                 pn = st_components.components(pre, post)
                 s_components, s_cover, t_components, t_cover = pn.get_components()
-                elimina0(s_cover)
+                s_components = ajustar_inicio(s_components)
+                s_cover = ajustar_inicio(s_cover)
+                t_components = ajustar_inicio(t_components)
+                t_cover = ajustar_inicio(t_cover)
                 print(f"Los S-componentes son {s_components}\nLas S-coverturas son {s_cover}")
                 print(f"Los T-componentes son {t_components}\nLas T-coverturas son {t_cover}")
         except ValueError:
             print("Entrada inválida. Por favor ingresa un número entero.")
 
 
-def elimina0(componente):
-    for comp in componente:
-        for i in comp:
-            comp[i] = i + 1
-    print(componente)
-    #return componente
+def ajustar_inicio(componente):
+    """
+    Ajusta el inicio de los nodos a 1 en lugar de 0
+    """
+    return [[nodo + 1 for nodo in comp] for comp in componente]
 
 
 def main():
