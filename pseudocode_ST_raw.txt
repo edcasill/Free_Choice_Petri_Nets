@@ -1,0 +1,35 @@
+INICIO
+    ENTRADA:
+        Pre = Matriz Pre de la red
+        Post = Matriz Post de la red
+    SALIDA:
+        S_componentes = []
+        T_componentes = []
+    ALGORITMO:
+    // algortimo principal
+    Lee Pre y Post
+
+    S_componentes = obtener_s_componentes(Pre, Post)
+    T_componentes = obtener_t_componentes(Pre, post)
+
+    Retornar S_componentes, T_componentes
+FIN
+
+
+FUNCION obtener_s_componentes(Pre, Post)
+    lugares_explorar = ["lista con todos los lugares de la red"]
+    componente_encontrada = []
+    Selecciona un lugar de  lugares_explorar y agregala a X.
+    Remueve el lugar de lugares_explorar.
+    Para cada lugar s en X:
+        Agrega las transiciones de salida del lugar seleccionado y agregarlas a X.
+        Para cada transicion t en X:
+            Suma la columna de Post correspondiente a la transicion (para la condicion de 1 lugar de entrada)
+            Si la suma de la columna == 1:
+                Agrega el lugar a X.
+                Remueve el lugar de lugares_explorar.
+            Si la suma de la columna > 1:
+                Agrega el lugar de menor denominacion a X.
+                Remueve el lugar de lugares_explorar.
+        Agrega X a componente_encontrada
+    FIN
