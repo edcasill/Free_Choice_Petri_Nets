@@ -1,35 +1,100 @@
 INICIO
-    ENTRADA:
-        Pre = Matriz Pre de la red
-        Post = Matriz Post de la red
+    DATOS:
+        Pre = Matriz Pre (Lugares x Transiciones)
+        Post = Matriz Post (Lugares x Transiciones)
+        S_total = Conjunto de todos los lugares de la red
+        T_total = Conjunto de todas las transiciones en la red
+
     SALIDA:
-        S_componentes = []
-        T_componentes = []
+        s_componentes = []
+        t_componentes = []
+
     ALGORITMO:
-    // algortimo principal
-    Lee Pre y Post
+    Para cada lugar s en S_total:
+        S_actual = {s} // Inicia la exploración desde un lugar
+        buscar_s_componente(S_actual)
 
-    S_componentes = obtener_s_componentes(Pre, Post)
-    T_componentes = obtener_t_componentes(Pre, post)
-
-    Retornar S_componentes, T_componentes
+    Para cada transicion t en T_total:
+        T_actual = {t}
+        buscar_t_componente(T_actual)
+    Retornar s_componentes, t_componentes
 FIN
 
+// funcion recursiva de backtracking
+FUNCION buscar_s_componente(S_actual):
+    // Obtener todas las transiciones conectadas a los lugares actuales
+    total_transiciones = cantidad de transiciones en la red
+    transiciones_conectadas = []
 
-FUNCION obtener_s_componentes(Pre, Post)
-    lugares_explorar = ["lista con todos los lugares de la red"]
-    componente_encontrada = []
-    Selecciona un lugar de  lugares_explorar y agregala a X.
-    Remueve el lugar de lugares_explorar.
-    Para cada lugar s en X:
-        Agrega las transiciones de salida del lugar seleccionado y agregarlas a X.
-        Para cada transicion t en X:
-            Suma la columna de Post correspondiente a la transicion (para la condicion de 1 lugar de entrada)
-            Si la suma de la columna == 1:
-                Agrega el lugar a X.
-                Remueve el lugar de lugares_explorar.
-            Si la suma de la columna > 1:
-                Agrega el lugar de menor denominacion a X.
-                Remueve el lugar de lugares_explorar.
-        Agrega X a componente_encontrada
-    FIN
+    Para cada lugar s en en S_actual:
+        Para cada transicion t desde 0 hasta total_transiciones:
+            Si Pre[s, t] > 0:
+                Agrega t a transiciones_conectadas
+            Si Post[s, t] > 0:
+                Agrega t a transiciones_conectadas
+
+    // validar regla de máquina de estados (Poda del árbol de búsqueda)
+    Para cada transicion t en transiciones_conectadas:
+        // revisa cuántas entradas y salidas tiene esta transición dentro de la subred
+        entradas_en_S = interseccion(obtener_lugares_entradas(t, Pre), S_actual)
+        salidas_en_S = interseccion(obtener_lugares_salidas(t, Post), S_actual)
+
+        // Si tiene más de 1 entrada o salida en S_actual, se rompe la regla de la máquina de estados.
+        Si longitud(entradas_en_S) > 1 O longitud(salidas_en_S) > 1:
+            // Camino inválido, el algoritmo retrocede (backtrack)
+            Retornar
+
+    // Verifica si el componente está completo o si debemos expandirlo
+    completo = VERDADERO
+    Para cada transicion t en transiciones_conectadas:
+        entradas_en_S = interseccion(obtener_lugares_entradas(t, Pre), S_actual)
+        salidas_en_S = interseccion(obtener_lugares_salidas(t, Post), S_actual)
+
+        // Si a la transición le falta su lugar de entrada en la subred
+        Si longitud(entradas_en_S) == 0:
+            completo = FALSO
+            // Explora una nueva rama por cada lugar de entrada posible
+            Para cada lugar_candidato en obtener_lugares_entradas(t, Pre):
+                nuevo_P = S_actual union {lugar_candidato}
+                buscar_s_componente(nuevo_P)
+            Romper_Ciclo // Detenemos este ciclo, la recursión se encargará de las ramas
+
+        // Si a la transición le falta su lugar de salida en la subred
+        Si longitud(salidas_en_S) == 0:
+            completo = FALSO
+            // Explora una nueva rama por cada lugar de salida posible
+            Para cada lugar_candidato en obtener_lugares_salidas(t, Post):
+                nuevo_P = S_actual union {lugar_candidato}
+                buscar_s_componente(nuevo_P)
+            Romper_Ciclo
+
+    // si pasa la validación y no le faltan lugares a ninguna transición, lo encontramos.
+    Si completo == VERDADERO Y S_actual no existe en s_componentes:
+        Agregar S_actual a s_componentes
+FIN
+
+FUNCION obtener_lugares_entradas(t, Pre)
+    lugar_entrada = []
+    total_lugares = cantidad de lugares en la red
+    Para cada lugar s desde 0 hasta total_lugares:
+        Si Pre[s, t] > 0:
+            Agrega s a lugar_entrada
+    Retornar lugar_entrada
+FIN
+
+FUNCION obtener_lugares_salidas(t, Post)
+    lugares_salida = []
+    total_lugares = cantidad de lugares en la red
+    Para cada lugar s desde 0 hasta total_lugares:
+        Si Post[s, t] > 0:
+            Agrega s a lugares_salida
+    Retornar lugares_salida
+FIN
+
+FUNCION interseccion(conjunto_A, conjunto_B)
+    elementos_comunes = []
+    Para cada elemento en conjunto_A:
+        Si elemento existe en conjunto_B:
+            Agregar elemento a elementos_comunes
+    Retornar elementos_comunes
+FIN
