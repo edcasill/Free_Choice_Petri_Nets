@@ -106,7 +106,7 @@ class components:
     def get_in_tran(self, s):
         in_tran = []
         for t in range(self.total_transitions):
-            if self.pre[s, t] > 0:
+            if self.post[s, t] > 0:
                 in_tran.append(t)
         return in_tran
 
@@ -120,7 +120,7 @@ class components:
     def get_out_tran(self, s):
         out_tran = []
         for t in range(self.total_transitions):
-            if self.post[s, t] > 0:
+            if self.pre[s, t] > 0:
                 out_tran.append(t)
         return out_tran
     
