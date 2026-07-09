@@ -2,6 +2,7 @@ import os
 import ast
 import petri_nets_types
 import st_components
+import st_comp_raw
 from visualizer import PetriVisualizer
 
 
@@ -34,6 +35,7 @@ def analize_net(archivo_seleccionado):
         try:
             print("1. Validar si es GM, ME y FC")
             print("2. Encontrar S y T componentes")
+            print("3. Encontrar S y T componentes por busqueda")
             option = int(input('Selecciona el analisis a realizar: '))
             if option == 1:
                 pn = petri_nets_types.Petri_Nets(pre, post)
@@ -55,6 +57,11 @@ def analize_net(archivo_seleccionado):
                 t_cover = ajustar_inicio(t_cover)
                 print(f"Los S-componentes son {s_components}\nLas S-coverturas son {s_cover}")
                 print(f"Los T-componentes son {t_components}\nLas T-coverturas son {t_cover}")
+            elif option == 3:
+                pn = st_comp_raw.components(pre, post)
+                s_components, t_components = pn.get_components()
+                print(f"Los S-componentes son {s_components}")
+                print(f"Los T-componentes son {t_components}")
         except ValueError:
             print("Entrada inválida. Por favor ingresa un número entero.")
 
