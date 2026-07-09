@@ -62,6 +62,11 @@ def analize_net(archivo_seleccionado):
                 s_components, t_components = pn.get_components()
                 print(f"Los S-componentes son {s_components}")
                 print(f"Los T-componentes son {t_components}")
+                
+                vis = PetriVisualizer(pre, post, output_dir="grafos_generados")
+                vis.dibujar_red(nombre_archivo="1_Red_Original_new")
+                vis.visualizar_s_componentes(s_components, prefijo="2_S_Comp_new")
+                vis.visualizar_t_componentes(t_components, prefijo="3_T_Comp_new")
         except ValueError:
             print("Entrada inválida. Por favor ingresa un número entero.")
 
