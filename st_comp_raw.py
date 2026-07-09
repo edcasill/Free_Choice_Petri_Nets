@@ -78,23 +78,23 @@ class components:
 
             if len(entradas_T) == 0:
                 complete = False
-                for posible_lugar in self.get_in_tran(s):
-                    if posible_lugar not in T_set:
+                for posible_transicion in self.get_in_tran(s):
+                    if posible_transicion not in T_set:
                         # ramificacion de nuevo conjunto
-                        new_S = list(T_set | {posible_lugar})
-                        self.search_s_component(new_S)
+                        new_T = list(T_set | {posible_transicion})
+                        self.search_t_component(new_T)
                 break
             if len(salidas_T) == 0:
                 complete = False
-                for posible_lugar in self.get_out_tran(s):
-                    if posible_lugar not in T_set:
-                        new_S = list(T_set | {posible_lugar})
-                        self.search_s_component(new_S)
+                for posible_transicion in self.get_out_tran(s):
+                    if posible_transicion not in T_set:
+                        new_T = list(T_set | {posible_transicion})
+                        self.search_t_component(new_T)
                 break
         if complete:
             componente_encontrado = sorted(list(T_set))
-            if componente_encontrado not in self.s_components:
-                self.s_components.append(componente_encontrado)
+            if componente_encontrado not in self.t_components:
+                self.t_components.append(componente_encontrado)
 
     def get_in_places(self, t):
         in_places = []
@@ -106,7 +106,7 @@ class components:
     def get_in_tran(self, s):
         in_tran = []
         for t in range(self.total_transitions):
-            if self.pre_transpose[s, t] > 0:
+            if self.pre[s, t] > 0:
                 in_tran.append(t)
         return in_tran
 
@@ -120,7 +120,7 @@ class components:
     def get_out_tran(self, s):
         out_tran = []
         for t in range(self.total_transitions):
-            if self.post_transpose[s, t] > 0:
+            if self.post[s, t] > 0:
                 out_tran.append(t)
         return out_tran
     
