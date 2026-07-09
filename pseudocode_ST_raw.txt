@@ -73,6 +73,58 @@ FUNCION buscar_s_componente(S_actual):
         Agregar S_actual a s_componentes
 FIN
 
+FUNCION buscar_t_componente(T_actual):
+    // Obtener todos los lugares conectados a las transiciones actuales
+    total_lugares = cantidad de lugares en la red
+    lugares_conectados = [] // Conjunto sin duplicados
+
+    Para cada transicion t en T_actual:
+        Para cada lugar s desde 0 hasta total_lugares:
+            Si Pre[s, t] > 0:
+                Agrega s a lugares_conectados
+            Si Post[s, t] > 0:
+                Agrega s a lugares_conectados
+
+    // Validar regla de Grafo Marcado (Poda del árbol de búsqueda)
+    Para cada lugar s en lugares_conectados:
+        // CUIDADO AQUÍ: Para entradas de lugar usamos Post, para salidas usamos Pre
+        entradas_en_T = interseccion(obtener_transiciones_entrada(s, Post), T_actual)
+        salidas_en_T = interseccion(obtener_transiciones_salida(s, Pre), T_actual)
+
+        // Si el lugar tiene más de 1 transición de entrada o salida dentro de T_actual
+        Si longitud(entradas_en_T) > 1 O longitud(salidas_en_T) > 1:
+            Retornar // Camino inválido (No es un grafo marcado), retrocede
+
+    // Verifica si el componente está completo o si debemos expandirlo
+    completo = VERDADERO
+    Para cada lugar s en lugares_conectados:
+        entradas_en_T = interseccion(obtener_transiciones_entrada(s, Post), T_actual)
+        salidas_en_T = interseccion(obtener_transiciones_salida(s, Pre), T_actual)
+
+        // Si al lugar le falta su transición de entrada en la subred
+        Si longitud(entradas_en_T) == 0:
+            completo = FALSO
+            // Explora una nueva rama por cada transición de entrada posible
+            Para cada transicion_candidata en obtener_transiciones_entrada(s, Post):
+                nuevo_T = T_actual union {transicion_candidata}
+                buscar_t_componente(nuevo_T)
+            Romper_Ciclo
+
+        // Si al lugar le falta su transición de salida en la subred
+        Si longitud(salidas_en_T) == 0:
+            completo = FALSO
+            // Explora una nueva rama por cada transición de salida posible
+            Para cada transicion_candidata en obtener_transiciones_salida(s, Pre):
+                nuevo_T = T_actual union {transicion_candidata}
+                buscar_t_componente(nuevo_T)
+            Romper_Ciclo
+
+    // Si pasa la validación y a ningún lugar le faltan transiciones
+    Si completo == VERDADERO:
+        Si T_actual NO existe en t_componentes:
+            Agregar T_actual a t_componentes
+FIN
+
 FUNCION obtener_lugares_entradas(t, Pre)
     lugar_entrada = []
     total_lugares = cantidad de lugares en la red
@@ -82,6 +134,15 @@ FUNCION obtener_lugares_entradas(t, Pre)
     Retornar lugar_entrada
 FIN
 
+FUNCION obtener_transiciones_entradas(s, Post)
+    transiciones_entrada = []
+    total_transiciones = cantidad de transiciones en la red
+    Para cada transicion t desde 0 hasta total_transiciones:
+        Si Post[s, t] > 0:
+            Agrega t a transiciones_entrada
+    Retornar transiciones_entrada
+FIN
+
 FUNCION obtener_lugares_salidas(t, Post)
     lugares_salida = []
     total_lugares = cantidad de lugares en la red
@@ -89,6 +150,15 @@ FUNCION obtener_lugares_salidas(t, Post)
         Si Post[s, t] > 0:
             Agrega s a lugares_salida
     Retornar lugares_salida
+FIN
+
+FUNCION obtener_transiciones_salidas(s, Pre)
+    transiciones_salida = []
+    total_transiciones = cantidad de transiciones en la red
+    Para cada transicion t desde 0 hasta total_transiciones:
+        Si Pre[s, t] > 0:
+            Agrega t a transiciones_salida
+    Retornar transiciones_salida
 FIN
 
 FUNCION interseccion(conjunto_A, conjunto_B)
